@@ -38,6 +38,20 @@ func GetNewsById(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(news)
 }
 
+func DeleteNews(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	newsId := mux.Vars(r)["id"]
+	if checkIfNewsExists(newsId) == false{
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "News not found"})
+		return
+	}
+	var news entities.News
+	database.Instance.Delete(&news, newsId)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(news)
+}
+
 func checkIfNewsExists(newsId string) bool{
 	var news entities.News
 	database.Instance.First(&news, newsId)
