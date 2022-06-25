@@ -27,6 +27,28 @@ func GetNews(w http.ResponseWriter, r *http.Request){
 func GetNewsById(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	newsId := mux.Vars(r)["id"]
+
+	if checkIfNewsExists(newsId) == false{
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "News not found"})
+		return
+	}
+
+	var news entities.News
+	database.Instance.First(&news, newsId)
+
+	var comments []entities.Comment
+	database.Instance.Find(&comments, "news_id = ?", newsId)
+
+	news.Comment = comments
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(news)
+}
+
+func UpdateNews(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	newsId := mux.Vars(r)["id"]
 	if checkIfNewsExists(newsId) == false{
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{"error": "News not found"})
@@ -34,7 +56,8 @@ func GetNewsById(w http.ResponseWriter, r *http.Request){
 	}
 	var news entities.News
 	database.Instance.First(&news, newsId)
-	w.WriteHeader(http.StatusOK)
+	json.NewDecoder(r.Body).Decode(&news)
+	database.Instance.Save(&news)
 	json.NewEncoder(w).Encode(news)
 }
 

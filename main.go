@@ -33,6 +33,7 @@ func RegisterProductRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/news", controllers.CreateNews).Methods("POST")
 	router.HandleFunc("/api/v1/news/{id}", controllers.GetNewsById).Methods("GET")
 	router.HandleFunc("/api/v1/news/{id}", controllers.DeleteNews).Methods("DELETE")
+	router.HandleFunc("/api/v1/news/{id}", controllers.UpdateNews).Methods("PUT")
 
 	// COMMENTS
 	router.HandleFunc("/api/v1/comments", controllers.CreateComments).Methods("POST")
