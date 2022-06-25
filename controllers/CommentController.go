@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"go-news-api/database"
 	"go-news-api/entities"
 	"net/http"
@@ -25,10 +26,25 @@ func CreateComments(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(comment)
 }
 
-func GetComments(w http.ResponseWriter, r *http.Request){
-	var comments []entities.Comment
-	database.Instance.Find(&comments)
+func DeleteComment(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
+	commentId := mux.Vars(r)["id"]
+	if checkIfCommentExists(commentId) == false{
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Comment not found"})
+		return
+	}
+	var comment entities.Comment
+	database.Instance.Delete(&comment, commentId)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(comments)
+	json.NewEncoder(w).Encode("Comment Deleted Successfully!")
+}
+
+func checkIfCommentExists(commentId string) bool{
+	var comment entities.Comment
+	database.Instance.First(&comment, commentId)
+	if comment.ID == 0{
+		return false
+	}
+	return true
 }
